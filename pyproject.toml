@@ -44,7 +44,7 @@ providers = [
     "openai>=1.40",
 ]
 semantic = ["sentence-transformers>=3.0", "sqlite-vec>=0.1.6", "onnxruntime>=1.24.3"]
-dev = ["pytest>=9.0.3", "pytest-asyncio>=1.3.0", "ruff>=0.1"]
+dev = ["pytest>=9.0.3", "pytest-asyncio>=1.3.0", "numpy>=1.26", "ruff>=0.1"]
 all = ["swiss-caselaw-scrapers[crypto,pdf,api,providers,semantic,dev]"]
 
 [tool.setuptools.packages.find]
