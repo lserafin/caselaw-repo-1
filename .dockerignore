@@ -1,0 +1,30 @@
+.git
+.github
+.agents
+.codex
+.pytest_cache
+.ruff_cache
+.venv
+__pycache__
+*.py[cod]
+
+# Local/runtime data. The MCP image bootstraps /data from Hugging Face.
+data
+output
+artifacts
+state
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite.zst
+*.parquet
+
+# Frontend/dependency caches are not needed by the MCP container.
+web_ui/node_modules
+web_ui/dist
+
+# Large paper/build byproducts.
+docs/paper/**/*.pdf
+docs/paper/**/*.tar.gz
+docs/paper/**/*.bbl

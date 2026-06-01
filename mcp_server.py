@@ -196,12 +196,7 @@ class ReflectRequest(BaseModel):
     bounded so a 60-page contract doesn't get sent verbatim.
     """
     license_key: str
-    # Bumped 30000 → 60000 (2026-05-16): real-world briefs are 20-50 k
-    # chars after PII redaction (typical 60-page motion). The 30 k cap
-    # was sending users a 422 with no helpful UI message. Sonnet 4.6
-    # input cost at 60 k chars ≈ 15 k tokens × $3/M = $0.045 per call —
-    # still well under the 25/day per-license cap.
-    redacted_text: str = Field(..., max_length=60000)
+    redacted_text: str = Field(..., max_length=30000)
     lang: str = "de"
     client_redactor_version: str | None = None
     client_redactor_summary: dict | None = None
@@ -17515,7 +17510,7 @@ def _list_tools() -> list[Tool]:
                     },
                     "language": {
                         "type": "string",
-                        "description": "Filter by language (de/fr/it/en). Omit to search across all.",
+                        "description": "OPTIONAL filter by language (de/fr/it/en). Omit to search across all.",
                     },
                     "year_min": {"type": "integer", "description": "Earliest publication year."},
                     "year_max": {"type": "integer", "description": "Latest publication year."},
@@ -22081,7 +22076,41 @@ if __name__ == "__main__":
                         help="Host to bind to in remote mode (default: 0.0.0.0)")
     parser.add_argument("--port", type=int, default=8765,
                         help="Port to listen on in remote mode (default: 8765)")
+    parser.add_argument(
+        "--bootstrap-snapshot",
+        action="store_true",
+        help=(
+            "Before starting, download and install the advertised Hugging Face "
+            "SQLite snapshot if decisions.db is missing."
+        ),
+    )
+    parser.add_argument(
+        "--force-bootstrap-snapshot",
+        action="store_true",
+        help="Replace decisions.db from the advertised Hugging Face SQLite snapshot before starting.",
+    )
+    parser.add_argument(
+        "--snapshot-repo-id",
+        default=HF_REPO,
+        help=f"Hugging Face dataset repo for --bootstrap-snapshot (default: {HF_REPO})",
+    )
+    parser.add_argument(
+        "--snapshot-revision",
+        default="main",
+        help="Hugging Face revision for --bootstrap-snapshot (default: main)",
+    )
     args = parser.parse_args()
+
+    if args.bootstrap_snapshot or args.force_bootstrap_snapshot:
+        from snapshot_bootstrap import bootstrap_sqlite_snapshot
+
+        bootstrap_sqlite_snapshot(
+            data_dir=DATA_DIR,
+            db_path=DB_PATH,
+            repo_id=args.snapshot_repo_id,
+            revision=args.snapshot_revision,
+            force=args.force_bootstrap_snapshot,
+        )
 
     if args.remote:
         main_remote(args.host, args.port)

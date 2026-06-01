@@ -469,7 +469,15 @@ Returns a real BGE fact pattern adapted as a Fallbearbeitung scenario. The appli
 
 **Remote server:** The dataset is updated automatically every night. No action needed.
 
-**Local server:** Ask your AI to run the `update_database` tool:
+**Local server:** For a fresh install, prefer the published SQLite snapshot:
+
+```bash
+python3 mcp_server.py --bootstrap-snapshot
+```
+
+This downloads the advertised `artifacts/sqlite/snapshots/*.sqlite.zst`, verifies its SHA-256 from `artifacts/manifest.json`, decompresses it to `SWISS_CASELAW_DIR/decisions.db`, and then starts the normal MCP server. If the DB already exists, the flag is a no-op. Use `--force-bootstrap-snapshot` to replace it intentionally.
+
+After that, ask your AI to run the `update_database` tool when you want to rebuild from Parquet:
 
 > **Update the Swiss case law database.**
 

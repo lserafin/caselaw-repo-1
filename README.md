@@ -298,6 +298,42 @@ The HuggingFace dataset may also publish a full compressed SQLite base snapshot 
 
 The snapshot is intended for local MCP/server bootstrapping: download `artifacts/manifest.json`, fetch `snapshot.sqlite_zst.path`, verify `snapshot.sqlite_zst.sha256`, decompress to `decisions.db.tmp`, run a quick SQLite row/schema check, then atomically move it to `decisions.db`. Newer `artifacts/sqlite/deltas/*.sqlite.zst` entries can then be applied by tools that support delta updates.
 
+The convenient path is to let the MCP server do the bootstrap before it starts:
+
+```bash
+python3 mcp_server.py --bootstrap-snapshot
+```
+
+For a local HTTP/SSE endpoint:
+
+```bash
+python3 mcp_server.py --bootstrap-snapshot --remote --host 127.0.0.1 --port 8765
+```
+
+`--bootstrap-snapshot` is a no-op when `SWISS_CASELAW_DIR/decisions.db` already exists. Use `--force-bootstrap-snapshot` only when you intentionally want to replace the local DB from the current published snapshot. The bootstrap helper is also available directly:
+
+```bash
+python3 -m snapshot_bootstrap
+```
+
+For a VPS, the same flow is packaged as Docker Compose:
+
+```bash
+docker compose up -d --build
+```
+
+CI publishes a prebuilt MCP image to GHCR on pushes to `main` and `v*` tags.
+To run the published image instead of building locally:
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/lserafin/caselaw-repo-1/main/docker-compose.image.yml
+docker compose -f docker-compose.image.yml up -d
+```
+
+Set `MCP_IMAGE=ghcr.io/<owner>/swiss-caselaw-mcp:latest` if you publish from a fork.
+
+See `docs/vps-docker.md` for disk, port, reverse-proxy, and update notes.
+
 Manual snapshot bootstrap:
 
 ```bash

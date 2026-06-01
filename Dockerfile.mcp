@@ -1,0 +1,36 @@
+# Production-ish MCP server image.
+#
+# Runtime data is not baked into the image. The container bootstraps
+# /data/decisions.db from the published Hugging Face SQLite snapshot on
+# first start when launched through docker-compose.yml.
+
+FROM python:3.12-slim-bookworm
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    SWISS_CASELAW_DIR=/data \
+    PATH="/app/.venv/bin:${PATH}"
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        sqlite3 \
+        tini \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir uv
+
+WORKDIR /app
+
+COPY . .
+
+RUN uv sync --extra api --no-dev --no-cache
+
+RUN mkdir -p /data
+
+EXPOSE 8765
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/health', timeout=5).read()"
+
+ENTRYPOINT ["tini", "--"]
+CMD ["python", "mcp_server.py", "--bootstrap-snapshot", "--remote", "--host", "0.0.0.0", "--port", "8765"]

@@ -44,7 +44,7 @@ providers = [
     "openai>=1.40",
 ]
 semantic = ["sentence-transformers>=3.0", "sqlite-vec>=0.1.6", "onnxruntime>=1.24.3"]
-dev = ["pytest>=9.0.3", "pytest-asyncio>=1.3.0", "ruff>=0.1"]
+dev = ["pytest>=9.0.3", "pytest-asyncio>=1.3.0", "numpy>=1.26", "ruff>=0.1"]
 all = ["swiss-caselaw-scrapers[crypto,pdf,api,providers,semantic,dev]"]
 
 [tool.setuptools.packages.find]
@@ -57,11 +57,12 @@ include = [
 ]
 
 [tool.setuptools]
-py-modules = ["pipeline", "base_scraper", "models", "db_schema", "run_scraper", "mcp_server", "fts5_server", "export_parquet", "build_fts5", "coverage_report"]
+py-modules = ["pipeline", "base_scraper", "models", "db_schema", "run_scraper", "mcp_server", "fts5_server", "export_parquet", "build_fts5", "coverage_report", "snapshot_bootstrap"]
 
 [project.scripts]
 swiss-caselaw = "pipeline:main"
 swiss-caselaw-gap-report = "coverage_report:main"
+swiss-caselaw-bootstrap-snapshot = "snapshot_bootstrap:main"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
