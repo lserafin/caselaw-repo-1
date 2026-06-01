@@ -1,0 +1,20 @@
+services:
+  swiss-caselaw-mcp:
+    image: ${MCP_IMAGE:-ghcr.io/lserafin/swiss-caselaw-mcp:latest}
+    restart: unless-stopped
+    environment:
+      SWISS_CASELAW_DIR: /data
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ${SWISS_CASELAW_DATA_DIR:-/srv/swiss-caselaw/data}:/data
+    ports:
+      - "${MCP_BIND:-127.0.0.1}:${MCP_PORT:-8765}:8765"
+    command:
+      - python
+      - mcp_server.py
+      - --bootstrap-snapshot
+      - --remote
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8765"

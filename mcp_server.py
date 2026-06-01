@@ -22081,7 +22081,41 @@ if __name__ == "__main__":
                         help="Host to bind to in remote mode (default: 0.0.0.0)")
     parser.add_argument("--port", type=int, default=8765,
                         help="Port to listen on in remote mode (default: 8765)")
+    parser.add_argument(
+        "--bootstrap-snapshot",
+        action="store_true",
+        help=(
+            "Before starting, download and install the advertised Hugging Face "
+            "SQLite snapshot if decisions.db is missing."
+        ),
+    )
+    parser.add_argument(
+        "--force-bootstrap-snapshot",
+        action="store_true",
+        help="Replace decisions.db from the advertised Hugging Face SQLite snapshot before starting.",
+    )
+    parser.add_argument(
+        "--snapshot-repo-id",
+        default=HF_REPO,
+        help=f"Hugging Face dataset repo for --bootstrap-snapshot (default: {HF_REPO})",
+    )
+    parser.add_argument(
+        "--snapshot-revision",
+        default="main",
+        help="Hugging Face revision for --bootstrap-snapshot (default: main)",
+    )
     args = parser.parse_args()
+
+    if args.bootstrap_snapshot or args.force_bootstrap_snapshot:
+        from snapshot_bootstrap import bootstrap_sqlite_snapshot
+
+        bootstrap_sqlite_snapshot(
+            data_dir=DATA_DIR,
+            db_path=DB_PATH,
+            repo_id=args.snapshot_repo_id,
+            revision=args.snapshot_revision,
+            force=args.force_bootstrap_snapshot,
+        )
 
     if args.remote:
         main_remote(args.host, args.port)
